@@ -338,22 +338,22 @@ game.scenes.add("main", new Splat.Scene(canvas, function() {
 
 	this.goundSprites = [
 		game.animations.get("bg-1"),
-		game.animations.get("bg-2"),
-		game.animations.get("bg-3"),
-		game.animations.get("bg-4"),
-		game.animations.get("bg-5"),
-		game.animations.get("bg-6"),
-		game.animations.get("bg-7"),
-		game.animations.get("bg-8"),
-		game.animations.get("bg-9"),
-		game.animations.get("bg-10"),
-		game.animations.get("bg-11"),
-		game.animations.get("bg-12"),
-		game.animations.get("bg-13"),
-		game.animations.get("bg-14"),
-		game.animations.get("bg-15"),
-		game.animations.get("bg-16"),
-		game.animations.get("bg-17"),
+		//game.animations.get("bg-2"),
+		// game.animations.get("bg-3"),
+		// game.animations.get("bg-4"),
+		// game.animations.get("bg-5"),
+		game.animations.get("bg-6")
+		// game.animations.get("bg-7"),
+		// game.animations.get("bg-8"),
+		// game.animations.get("bg-9"),
+		// game.animations.get("bg-10"),
+		// game.animations.get("bg-11"),
+		// game.animations.get("bg-12"),
+		// game.animations.get("bg-13"),
+		// game.animations.get("bg-14"),
+		// game.animations.get("bg-15"),
+		// game.animations.get("bg-16"),
+		// game.animations.get("bg-17"),
 	];
 
 	this.groundArea = {

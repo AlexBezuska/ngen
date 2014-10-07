@@ -10,24 +10,79 @@ var manifest = {
 	"sounds": {},
 	"fonts": {},
 	"animations": {
-		"tree-sprite-1": {
-			"strip": "img/tree-sprite-1.png",
+		"bush-large-1": {
+			"strip": "img/bush-large-1.png",
 			"frames": 1,
 			"msPerFrame": 400
 		},
-		"tree-sprite-2": {
-			"strip": "img/tree-sprite-2.png",
+		"bush-med-1": {
+			"strip": "img/bush-med-1.png",
 			"frames": 1,
 			"msPerFrame": 400
 		},
-		"tree-sprite-3": {
-			"strip": "img/tree-sprite-3.png",
+		"bush-small-1": {
+			"strip": "img/bush-small-1.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"bush-small-2": {
+			"strip": "img/bush-small-2.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"tree-dead-1": {
+			"strip": "img/tree-dead-1.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"tree-dead-2": {
+			"strip": "img/tree-dead-2.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"tree-oak-large-bare": {
+			"strip": "img/tree-oak-large-bare.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"tree-oak-large": {
+			"strip": "img/tree-oak-large.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"tree-pine-med": {
+			"strip": "img/tree-pine-med.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"tree-pine-small": {
+			"strip": "img/tree-pine-small.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"tree-redwood-large": {
+			"strip": "img/tree-redwood-large.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"tree-redwood-med-bare": {
+			"strip": "img/tree-redwood-med-bare.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"tree-redwood-med": {
+			"strip": "img/tree-redwood-med.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"tree-redwood-large-bare": {
+			"strip": "img/tree-redwood-large-bare.png",
 			"frames": 1,
 			"msPerFrame": 400
 		},
 	}
 };
-var debug = true;
+var debug = false;
 
 function randompick(array) {
 	return Math.floor(Math.random() * array.length);
@@ -49,10 +104,10 @@ function createPlants(properties, quantity) {
 
 		var positionX = randomBetween(properties.xRange[0] - (thisSprite.width / 2), properties.xRange[1] + (thisSprite.width / 2));
 		var positionY = randomBetween(properties.yRange[0] - thisSprite.height, properties.yRange[1]);
-		console.log(thisSprite);
+
 		array.push(new Splat.AnimatedEntity(positionX, positionY, thisSprite.width, thisSprite.height, thisSprite, 0, 0));
 	}
-	console.log(array);
+
 	return array;
 }
 
@@ -66,7 +121,7 @@ function centerText(context, text, offsetX, offsetY) {
 }
 
 function sortEntities(entities) {
-	return entities.sort(function(a, b) {
+	return entities.sort(function(b, a) {
 		return (b.y + b.height) - (a.y + a.height);
 	});
 }
@@ -140,17 +195,29 @@ game.scenes.add("main", new Splat.Scene(canvas, function() {
 	// initialization
 
 	this.testTreeSprites = [
-		game.animations.get("tree-sprite-2"),
-		game.animations.get("tree-sprite-3")
+		game.animations.get("bush-large-1"),
+		game.animations.get("bush-med-1"),
+		game.animations.get("bush-small-1"),
+		game.animations.get("bush-small-2"),
+		game.animations.get("tree-dead-1"),
+		game.animations.get("tree-dead-2"),
+		game.animations.get("tree-oak-large-bare"),
+		game.animations.get("tree-oak-large"),
+		game.animations.get("tree-pine-med"),
+		game.animations.get("tree-pine-small"),
+		game.animations.get("tree-redwood-large"),
+		game.animations.get("tree-redwood-med-bare"),
+		game.animations.get("tree-redwood-med"),
+		game.animations.get("tree-redwood-large-bare")
 	];
 
 	this.testTreeProperties = {
 		sprites: this.testTreeSprites,
-		xRange: [200, 250],
-		yRange: [200, 250]
+		xRange: [0, 640],
+		yRange: [0, 640]
 	};
 
-	this.trees = createPlants(this.testTreeProperties, 14);
+	this.trees = createPlants(this.testTreeProperties, 65);
 
 }, function(elapsedMilis) {
 	for (var a = 0; a < this.testTreeSprites.length; a++) {
@@ -159,19 +226,16 @@ game.scenes.add("main", new Splat.Scene(canvas, function() {
 	// simulation
 }, function(context) {
 	// draw
-	context.fillStyle = "black";
+	context.fillStyle = "#425838";
 	context.fillRect(0, 0, canvas.width, canvas.height);
 
-	context.fillStyle = "#fff";
-	context.font = "25px helvetica";
-	centerText(context, "main", 0, 20);
 
 	sortAndDraw(context, this.trees);
 
-	drawOutlines(context, this.trees, "white");
 
 	if (debug) {
 		context.strokeStyle = "white";
+		drawOutlines(context, this.trees, "white");
 		context.strokeRect(this.testTreeProperties.xRange[0], this.testTreeProperties.yRange[0], this.testTreeProperties.xRange[1], this.testTreeProperties.yRange[1]);
 	}
 

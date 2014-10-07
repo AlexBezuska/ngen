@@ -52,8 +52,8 @@ var manifest = {
 		},
 		"tree-pine-med": {
 			"strip": "img/tree-pine-med.png",
-			"frames": 1,
-			"msPerFrame": 400
+			"frames": 3,
+			"msPerFrame": 1500
 		},
 		"tree-pine-small": {
 			"strip": "img/tree-pine-small.png",
@@ -168,44 +168,52 @@ var manifest = {
 
 	}
 };
-var debug = false;
 
-function randompick(array) {
+var game = new Splat.Game(canvas, manifest);
+var debug = false;
+var heat = 0;
+var moisture = 0;
+
+
+/*
+ * Pick a random index from an array, returns a number
+ */
+function randomPick(array) {
 	return Math.floor(Math.random() * array.length);
 }
 
+function filterByClimate(array, heat, moisture) {
+	var filteredArray = [];
+	for (var i = 0; i < array.length; i++) {
+		if (inArray(array[i].heat, heat)) {
+			if (inArray(array[i].moisture, moisture)) {
+				filteredArray.push(array[i]);
+			}
+		}
+
+	}
+	return filteredArray;
+}
+
+/*
+ * Pick a random number between min and max
+ */
 function randomBetween(min, max) {
 	return Math.floor(Math.random() * max) + min;
 }
 
-
 /*
- * uses sprite property object to tile an area randomly
- * using the given sprite array
+ * Fills a rectangle with sprites from an array
  */
-function tileArea(properties) {
+function tileArea(sprites, x, y, width, height) {
 	var array = [];
-	// var tileWidth = properties.sprites[0].width;
-	// var tileHeight= properties.sprites[0].height;
-	// var tilesWide = properties.xRange[1] / tileWidth;
-	// var tilesTall = properties.yRange[1] / tileHeight;
-	// //create column
-	// for (var i = 0; i < tilesTall; i++) {
-	// 	var thisSprite = properties.sprites[randompick(properties.sprites)];
-	// 	var tileYOrigin = properties.yRange[0] + (tileHeight * (i+ 1));
-
-	// 	array.push(new Splat.AnimatedEntity(positionX, positionY, thisSprite.width, thisSprite.height, thisSprite, 0, 0));
-	// }
-
-
-
-	for (var w = 0; w < canvas.width; w += properties.sprites[0].width) {
-		for (var h = 0; h < canvas.height; h += properties.sprites[0].height) {
-			var thisSprite = properties.sprites[randompick(properties.sprites)];
+	var filteredSprites = filterByClimate(sprites, heat, moisture);
+	for (var w = x; w < width; w += filteredSprites[0].width) {
+		for (var h = y; h < height; h += filteredSprites[0].height) {
+			var thisSprite = filteredSprites[randomPick(filteredSprites)];
 			array.push(new Splat.AnimatedEntity(w, h, thisSprite.width, thisSprite.height, thisSprite, 0, 0));
 		}
 	}
-
 	return array;
 }
 
@@ -213,27 +221,15 @@ function tileArea(properties) {
  * adds plant entityies to the array,
  * use properties object to define plant characteristics
  */
-function createPlants(properties, quantity) {
+function createPlants(sprites, x, y, width, height, quantity) {
 	var array = [];
 	for (var i = 0; i < quantity; i++) {
-		var thisSprite = properties.sprites[randompick(properties.sprites)];
-
-		var positionX = randomBetween(properties.xRange[0] - (thisSprite.width / 2), properties.xRange[1] + (thisSprite.width / 2));
-		var positionY = randomBetween(properties.yRange[0] - thisSprite.height, properties.yRange[1]);
-
-		array.push(new Splat.AnimatedEntity(positionX, positionY, thisSprite.width, thisSprite.height, thisSprite, 0, 0));
+		var thisSprite = sprites[randomPick(sprites)];
+		var positionX = randomBetween(x - (thisSprite.sprite.width / 2), width + (thisSprite.sprite.width / 2));
+		var positionY = randomBetween(y - thisSprite.sprite.height, height);
+		array.push(new Splat.AnimatedEntity(positionX, positionY, thisSprite.sprite.width, thisSprite.sprite.height, thisSprite.sprite, 0, 0));
 	}
-
 	return array;
-}
-
-var game = new Splat.Game(canvas, manifest);
-
-function centerText(context, text, offsetX, offsetY) {
-	var w = context.measureText(text).width;
-	var x = offsetX + (canvas.width / 2) - (w / 2) | 0;
-	var y = offsetY | 0;
-	context.fillText(text, x, y);
 }
 
 function sortEntities(entities) {
@@ -249,6 +245,24 @@ function sortAndDraw(context, entities) {
 	}
 }
 
+function centerText(context, text, offsetX, offsetY) {
+	var w = context.measureText(text).width;
+	var x = offsetX + (canvas.width / 2) - (w / 2) | 0;
+	var y = offsetY | 0;
+	context.fillText(text, x, y);
+}
+
+function inArray(haystack, needle) {
+	alert(haystack.length);
+	for (var i = 0; i < haystack.length; i++) {
+		return (haystack[i] === needle);
+	}
+	return false;
+}
+
+/*
+ * Return true if the variable is an array
+ */
 function isArray(someVar) {
 	if (Object.prototype.toString.call(someVar) === "[object Array]") {
 		return true;
@@ -287,6 +301,17 @@ function drawOutlines(context, entities, color) {
 	}
 }
 
+function animateEntities(elapsedMilis, entities) {
+	if (isArray(entities)) {
+		for (var a = 0; a < elapsedMilis.length; a++) {
+			entities[a].move(elapsedMilis);
+		}
+	} else {
+		entities.move(elapsedMilis);
+	}
+}
+
+
 game.scenes.add("title", new Splat.Scene(canvas, function() {
 	// initialization
 	this.timers.expire = new Splat.Timer(undefined, 100, function() {
@@ -306,69 +331,86 @@ game.scenes.add("title", new Splat.Scene(canvas, function() {
 }));
 
 
-
 game.scenes.add("main", new Splat.Scene(canvas, function() {
 	// initialization
+	this.testTreeSprites = [{
+		sprite: game.animations.get("bush-large-1"),
+		heat: [2, 3],
+		moisture: [1, 2]
+	}, {
+		sprite: game.animations.get("bush-med-1"),
+		heat: [2, 3],
+		moisture: [1, 2]
+	}, {
+		sprite: game.animations.get("bush-small-1"),
+		heat: [2, 3],
+		moisture: [1, 2]
+	}, {
+		sprite: game.animations.get("bush-small-2"),
+		heat: [2, 3],
+		moisture: [1, 2]
+	}, {
+		sprite: game.animations.get("tree-dead-1"),
+		heat: [2, 3],
+		moisture: [1, 2]
+	}, {
+		sprite: game.animations.get("tree-dead-2"),
+		heat: [2, 3],
+		moisture: [1, 2]
+	}, {
+		sprite: game.animations.get("tree-oak-large-bare"),
+		heat: [2, 3],
+		moisture: [1, 2]
+	}, {
+		sprite: game.animations.get("tree-oak-large"),
+		heat: [2, 3],
+		moisture: [1, 2]
+	}, {
+		sprite: game.animations.get("tree-pine-med"),
+		heat: [1],
+		moisture: [0, 1, 2]
+	}, {
+		sprite: game.animations.get("tree-pine-small"),
+		heat: [1],
+		moisture: [0, 1, 2]
+	}, {
+		sprite: game.animations.get("tree-redwood-large"),
+		heat: [2],
+		moisture: [2]
+	}, {
+		sprite: game.animations.get("tree-redwood-med-bare"),
+		heat: [2],
+		moisture: [2]
+	}, {
+		sprite: game.animations.get("tree-redwood-med"),
+		heat: [2],
+		moisture: [2]
+	}, {
+		sprite: game.animations.get("tree-redwood-large-bare"),
+		heat: [0, 1, 2, 3],
+		moisture: [0, 2]
+	}];
+	//moisture 0-2
+	//heat 0-3
 
-	this.testTreeSprites = [
-		game.animations.get("bush-large-1"),
-		game.animations.get("bush-med-1"),
-		game.animations.get("bush-small-1"),
-		game.animations.get("bush-small-2"),
-		game.animations.get("tree-dead-1"),
-		game.animations.get("tree-dead-2"),
-		game.animations.get("tree-oak-large-bare"),
-		game.animations.get("tree-oak-large"),
-		game.animations.get("tree-pine-med"),
-		game.animations.get("tree-pine-small"),
-		game.animations.get("tree-redwood-large"),
-		game.animations.get("tree-redwood-med-bare"),
-		game.animations.get("tree-redwood-med"),
-		game.animations.get("tree-redwood-large-bare")
-	];
-
-	this.testTreeProperties = {
-		sprites: this.testTreeSprites,
-		xRange: [0, 640],
-		yRange: [0, 640]
-	};
-
-	this.trees = createPlants(this.testTreeProperties, 65);
-
+	// sprite array, x, y, width, height, quantity
+	this.trees = createPlants(this.testTreeSprites, 0, 0, 640, 640, 35);
 
 	this.goundSprites = [
-		game.animations.get("bg-1"),
-		//game.animations.get("bg-2"),
-		// game.animations.get("bg-3"),
-		// game.animations.get("bg-4"),
-		// game.animations.get("bg-5"),
-		game.animations.get("bg-6")
-		// game.animations.get("bg-7"),
-		// game.animations.get("bg-8"),
-		// game.animations.get("bg-9"),
-		// game.animations.get("bg-10"),
-		// game.animations.get("bg-11"),
-		// game.animations.get("bg-12"),
-		// game.animations.get("bg-13"),
-		// game.animations.get("bg-14"),
-		// game.animations.get("bg-15"),
-		// game.animations.get("bg-16"),
-		// game.animations.get("bg-17"),
+		game.animations.get("bg-1")
+		//game.animations.get("bg-6")
 	];
 
-	this.groundArea = {
-		sprites: this.goundSprites,
-		xRange: [0, 640],
-		yRange: [0, 640]
-	};
+	// sprite array, x, y, width, height
+	this.ground = tileArea(this.goundSprites, 0, 0, canvas.width, canvas.height);
 
-	this.ground = tileArea(this.groundArea);
 
 }, function(elapsedMilis) {
-	for (var a = 0; a < this.testTreeSprites.length; a++) {
-		this.testTreeSprites[a].move(elapsedMilis);
-	}
 	// simulation
+	// this.testTreeSprites[8].move(elapsedMilis);
+	// animateEntities(elapsedMilis, this.testTreeSprites);
+	animateEntities(elapsedMilis, this.goundSprites);
+
 }, function(context) {
 	// draw
 	context.fillStyle = "#425838";

@@ -80,6 +80,92 @@ var manifest = {
 			"frames": 1,
 			"msPerFrame": 400
 		},
+		"bg-1": {
+			"strip": "img/bg-1.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"bg-2": {
+			"strip": "img/bg-2.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"bg-3": {
+			"strip": "img/bg-3.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"bg-4": {
+			"strip": "img/bg-4.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"bg-5": {
+			"strip": "img/bg-5.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"bg-6": {
+			"strip": "img/bg-6.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"bg-7": {
+			"strip": "img/bg-7.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"bg-8": {
+			"strip": "img/bg-8.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"bg-9": {
+			"strip": "img/bg-9.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"bg-10": {
+			"strip": "img/bg-10.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"bg-11": {
+			"strip": "img/bg-11.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"bg-12": {
+			"strip": "img/bg-12.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"bg-13": {
+			"strip": "img/bg-13.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"bg-14": {
+			"strip": "img/bg-14.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"bg-15": {
+			"strip": "img/bg-15.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"bg-16": {
+			"strip": "img/bg-16.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"bg-17": {
+			"strip": "img/bg-17.png",
+			"frames": 1,
+			"msPerFrame": 400
+		}
+
 	}
 };
 var debug = false;
@@ -92,6 +178,36 @@ function randomBetween(min, max) {
 	return Math.floor(Math.random() * max) + min;
 }
 
+
+/*
+ * uses sprite property object to tile an area randomly
+ * using the given sprite array
+ */
+function tileArea(properties) {
+	var array = [];
+	// var tileWidth = properties.sprites[0].width;
+	// var tileHeight= properties.sprites[0].height;
+	// var tilesWide = properties.xRange[1] / tileWidth;
+	// var tilesTall = properties.yRange[1] / tileHeight;
+	// //create column
+	// for (var i = 0; i < tilesTall; i++) {
+	// 	var thisSprite = properties.sprites[randompick(properties.sprites)];
+	// 	var tileYOrigin = properties.yRange[0] + (tileHeight * (i+ 1));
+
+	// 	array.push(new Splat.AnimatedEntity(positionX, positionY, thisSprite.width, thisSprite.height, thisSprite, 0, 0));
+	// }
+
+
+
+	for (var w = 0; w < canvas.width; w += properties.sprites[0].width) {
+		for (var h = 0; h < canvas.height; h += properties.sprites[0].height) {
+			var thisSprite = properties.sprites[randompick(properties.sprites)];
+			array.push(new Splat.AnimatedEntity(w, h, thisSprite.width, thisSprite.height, thisSprite, 0, 0));
+		}
+	}
+
+	return array;
+}
 
 /*
  * adds plant entityies to the array,
@@ -219,6 +335,35 @@ game.scenes.add("main", new Splat.Scene(canvas, function() {
 
 	this.trees = createPlants(this.testTreeProperties, 65);
 
+
+	this.goundSprites = [
+		game.animations.get("bg-1"),
+		game.animations.get("bg-2"),
+		game.animations.get("bg-3"),
+		game.animations.get("bg-4"),
+		game.animations.get("bg-5"),
+		game.animations.get("bg-6"),
+		game.animations.get("bg-7"),
+		game.animations.get("bg-8"),
+		game.animations.get("bg-9"),
+		game.animations.get("bg-10"),
+		game.animations.get("bg-11"),
+		game.animations.get("bg-12"),
+		game.animations.get("bg-13"),
+		game.animations.get("bg-14"),
+		game.animations.get("bg-15"),
+		game.animations.get("bg-16"),
+		game.animations.get("bg-17"),
+	];
+
+	this.groundArea = {
+		sprites: this.goundSprites,
+		xRange: [0, 640],
+		yRange: [0, 640]
+	};
+
+	this.ground = tileArea(this.groundArea);
+
 }, function(elapsedMilis) {
 	for (var a = 0; a < this.testTreeSprites.length; a++) {
 		this.testTreeSprites[a].move(elapsedMilis);
@@ -229,7 +374,7 @@ game.scenes.add("main", new Splat.Scene(canvas, function() {
 	context.fillStyle = "#425838";
 	context.fillRect(0, 0, canvas.width, canvas.height);
 
-
+	sortAndDraw(context, this.ground);
 	sortAndDraw(context, this.trees);
 
 

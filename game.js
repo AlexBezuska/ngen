@@ -80,6 +80,96 @@ var manifest = {
 			"frames": 1,
 			"msPerFrame": 400
 		},
+		"flowers-2": {
+			"strip": "img/flowers-2.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"ice-plant": {
+			"strip": "img/ice-plant.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"tropical-flowers": {
+			"strip": "img/tropical-flowers.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"flowers-1": {
+			"strip": "img/flowers-1.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"tropical-bush-1": {
+			"strip": "img/tropical-bush-1.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"palm-tree-2": {
+			"strip": "img/palm-tree-2.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"palm-tree": {
+			"strip": "img/palm-tree.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"winter-tree-1": {
+			"strip": "img/winter-tree-1.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"cactus-mini-5": {
+			"strip": "img/cactus-mini-5.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"mushroom-2": {
+			"strip": "img/mushroom-2.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"mushroom-1": {
+			"strip": "img/mushroom-1.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"cactus-mini-4": {
+			"strip": "img/cactus-mini-4.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"cactus-mid-3": {
+			"strip": "img/cactus-mid-3.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"cactus-mid-2": {
+			"strip": "img/cactus-mid-2.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"cactus-mid": {
+			"strip": "img/cactus-mid.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"cactus-mini-3": {
+			"strip": "img/cactus-mini-3.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"cactus-mini-2": {
+			"strip": "img/cactus-mini-2.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
+		"cactus-mini": {
+			"strip": "img/cactus-mini.png",
+			"frames": 1,
+			"msPerFrame": 400
+		},
 		"bg-1": {
 			"strip": "img/bg-1.png",
 			"frames": 1,
@@ -171,9 +261,49 @@ var manifest = {
 
 var game = new Splat.Game(canvas, manifest);
 var debug = false;
-var heat = 0;
-var moisture = 0;
+var masterHeat = 0;
 
+var masterMoisture = 0;
+
+var qs = getQueryStrings();
+var qsHeat = qs.heat;
+if (qsHeat) {
+	masterHeat = parseInt(qsHeat);
+}
+var qsMoisture = qs.moisture;
+if (qsMoisture) {
+	masterMoisture = parseInt(qsMoisture);
+}
+
+
+
+var submit = document.getElementById("submit");
+
+var txtHeat = document.getElementById("txtHeat");
+txtHeat.value = masterHeat;
+var txtMoisture = document.getElementById("txtMoisture");
+txtMoisture.value = masterMoisture;
+
+submit.addEventListener("click", function() {
+	console.log("click");
+	var thisHeat = 0;
+	if (txtHeat.value > 0) {
+		if (txtHeat.value > 3) {
+			thisHeat = 3;
+		} else {
+			thisHeat = txtHeat.value;
+		}
+	}
+	var thisMoisture = 0;
+	if (txtMoisture.value > 0) {
+		if (txtMoisture.value > 2) {
+			thisMoisture = 2;
+		} else {
+			thisMoisture = txtMoisture.value;
+		}
+	}
+	window.location = "index.html?heat=" + thisHeat + "&moisture=" + thisMoisture;
+});
 
 /*
  * Pick a random index from an array, returns a number
@@ -182,15 +312,16 @@ function randomPick(array) {
 	return Math.floor(Math.random() * array.length);
 }
 
-function filterByClimate(array, heat, moisture) {
+function filterByClimate(array) {
 	var filteredArray = [];
 	for (var i = 0; i < array.length; i++) {
-		if (inArray(array[i].heat, heat)) {
-			if (inArray(array[i].moisture, moisture)) {
+		if (inArray(array[i].heat, masterHeat)) {
+			if (inArray(array[i].moisture, masterMoisture)) {
 				filteredArray.push(array[i]);
 			}
+		} else {
+			console.log("No sprites match this, or error");
 		}
-
 	}
 	return filteredArray;
 }
@@ -207,10 +338,9 @@ function randomBetween(min, max) {
  */
 function tileArea(sprites, x, y, width, height) {
 	var array = [];
-	var filteredSprites = filterByClimate(sprites, heat, moisture);
-	for (var w = x; w < width; w += filteredSprites[0].width) {
-		for (var h = y; h < height; h += filteredSprites[0].height) {
-			var thisSprite = filteredSprites[randomPick(filteredSprites)];
+	for (var w = x; w < width; w += sprites[0].width) {
+		for (var h = y; h < height; h += sprites[0].height) {
+			var thisSprite = sprites[randomPick(sprites)];
 			array.push(new Splat.AnimatedEntity(w, h, thisSprite.width, thisSprite.height, thisSprite, 0, 0));
 		}
 	}
@@ -223,8 +353,9 @@ function tileArea(sprites, x, y, width, height) {
  */
 function createPlants(sprites, x, y, width, height, quantity) {
 	var array = [];
+	var filteredSprites = filterByClimate(sprites);
 	for (var i = 0; i < quantity; i++) {
-		var thisSprite = sprites[randomPick(sprites)];
+		var thisSprite = filteredSprites[randomPick(filteredSprites)];
 		var positionX = randomBetween(x - (thisSprite.sprite.width / 2), width + (thisSprite.sprite.width / 2));
 		var positionY = randomBetween(y - thisSprite.sprite.height, height);
 		array.push(new Splat.AnimatedEntity(positionX, positionY, thisSprite.sprite.width, thisSprite.sprite.height, thisSprite.sprite, 0, 0));
@@ -252,10 +383,12 @@ function centerText(context, text, offsetX, offsetY) {
 	context.fillText(text, x, y);
 }
 
+
 function inArray(haystack, needle) {
-	alert(haystack.length);
 	for (var i = 0; i < haystack.length; i++) {
-		return (haystack[i] === needle);
+		if (haystack[i] === needle) {
+			return true;
+		}
 	}
 	return false;
 }
@@ -311,6 +444,24 @@ function animateEntities(elapsedMilis, entities) {
 	}
 }
 
+function getQueryStrings() {
+	var assoc = {};
+	var decode = function(s) {
+		return decodeURIComponent(s.replace(/\+/g, " "));
+	};
+	var queryString = location.search.substring(1);
+	var keyValues = queryString.split("&");
+	for (var i = 0; i < keyValues.length; i++) {
+		var key = keyValues[i].split("=");
+		if (key.length > 1) {
+			assoc[decode(key[0])] = decode(key[1]);
+		}
+	}
+
+
+	return assoc;
+}
+
 
 game.scenes.add("title", new Splat.Scene(canvas, function() {
 	// initialization
@@ -334,62 +485,135 @@ game.scenes.add("title", new Splat.Scene(canvas, function() {
 game.scenes.add("main", new Splat.Scene(canvas, function() {
 	// initialization
 	this.testTreeSprites = [{
-		sprite: game.animations.get("bush-large-1"),
-		heat: [2, 3],
-		moisture: [1, 2]
+		"sprite": game.animations.get("bush-large-1"),
+		"heat": [2, 3],
+		"moisture": [1, 2]
 	}, {
-		sprite: game.animations.get("bush-med-1"),
-		heat: [2, 3],
-		moisture: [1, 2]
+		"sprite": game.animations.get("bush-med-1"),
+		"heat": [2, 3],
+		"moisture": [1, 2]
 	}, {
-		sprite: game.animations.get("bush-small-1"),
-		heat: [2, 3],
-		moisture: [1, 2]
+		"sprite": game.animations.get("bush-small-1"),
+		"heat": [2, 3],
+		"moisture": [1, 2]
 	}, {
-		sprite: game.animations.get("bush-small-2"),
-		heat: [2, 3],
-		moisture: [1, 2]
+		"sprite": game.animations.get("bush-small-2"),
+		"heat": [2, 3],
+		"moisture": [1, 2]
 	}, {
-		sprite: game.animations.get("tree-dead-1"),
-		heat: [2, 3],
-		moisture: [1, 2]
+		"sprite": game.animations.get("tree-dead-1"),
+		"heat": [2, 3],
+		"moisture": [1, 2]
 	}, {
-		sprite: game.animations.get("tree-dead-2"),
-		heat: [2, 3],
-		moisture: [1, 2]
+		"sprite": game.animations.get("tree-dead-2"),
+		"heat": [2, 3],
+		"moisture": [1, 2]
 	}, {
-		sprite: game.animations.get("tree-oak-large-bare"),
-		heat: [2, 3],
-		moisture: [1, 2]
+		"sprite": game.animations.get("tree-oak-large-bare"),
+		"heat": [2, 3],
+		"moisture": [1, 2]
 	}, {
-		sprite: game.animations.get("tree-oak-large"),
-		heat: [2, 3],
-		moisture: [1, 2]
+		"sprite": game.animations.get("tree-oak-large"),
+		"heat": [2, 3],
+		"moisture": [1, 2]
 	}, {
-		sprite: game.animations.get("tree-pine-med"),
-		heat: [1],
-		moisture: [0, 1, 2]
+		"sprite": game.animations.get("tree-pine-med"),
+		"heat": [1],
+		"moisture": [0, 1, 2]
 	}, {
-		sprite: game.animations.get("tree-pine-small"),
-		heat: [1],
-		moisture: [0, 1, 2]
+		"sprite": game.animations.get("tree-pine-small"),
+		"heat": [1],
+		"moisture": [0, 1, 2]
 	}, {
-		sprite: game.animations.get("tree-redwood-large"),
-		heat: [2],
-		moisture: [2]
+		"sprite": game.animations.get("tree-redwood-large"),
+		"heat": [2],
+		"moisture": [2]
 	}, {
-		sprite: game.animations.get("tree-redwood-med-bare"),
-		heat: [2],
-		moisture: [2]
+		"sprite": game.animations.get("tree-redwood-med-bare"),
+		"heat": [2],
+		"moisture": [2]
 	}, {
-		sprite: game.animations.get("tree-redwood-med"),
-		heat: [2],
-		moisture: [2]
+		"sprite": game.animations.get("tree-redwood-med"),
+		"heat": [2],
+		"moisture": [2]
 	}, {
-		sprite: game.animations.get("tree-redwood-large-bare"),
-		heat: [0, 1, 2, 3],
-		moisture: [0, 2]
+		"sprite": game.animations.get("tree-redwood-large-bare"),
+		"heat": [1, 2],
+		"moisture": [2]
+	}, {
+		"sprite": game.animations.get("flowers-2"),
+		"heat": [2],
+		"moisture": [1]
+	}, {
+		"sprite": game.animations.get("ice-plant"),
+		"heat": [1],
+		"moisture": [0, 1, 2]
+	}, {
+		"sprite": game.animations.get("tropical-flowers"),
+		"heat": [3],
+		"moisture": [1]
+	}, {
+		"sprite": game.animations.get("flowers-1"),
+		"heat": [2],
+		"moisture": [1]
+	}, {
+		"sprite": game.animations.get("tropical-bush-1"),
+		"heat": [3],
+		"moisture": [1]
+	}, {
+		"sprite": game.animations.get("palm-tree-2"),
+		"heat": [3],
+		"moisture": [1]
+	}, {
+		"sprite": game.animations.get("palm-tree"),
+		"heat": [3],
+		"moisture": [1]
+	}, {
+		"sprite": game.animations.get("winter-tree-1"),
+		"heat": [1],
+		"moisture": [1, 2]
+	}, {
+		"sprite": game.animations.get("cactus-mini-5"),
+		"heat": [3],
+		"moisture": [0]
+	}, {
+		"sprite": game.animations.get("mushroom-2"),
+		"heat": [2],
+		"moisture": [2]
+	}, {
+		"sprite": game.animations.get("mushroom-1"),
+		"heat": [2],
+		"moisture": [2]
+	}, {
+		"sprite": game.animations.get("cactus-mini-4"),
+		"heat": [3],
+		"moisture": [0]
+	}, {
+		"sprite": game.animations.get("cactus-mid-3"),
+		"heat": [3],
+		"moisture": [0]
+	}, {
+		"sprite": game.animations.get("cactus-mid-2"),
+		"heat": [3],
+		"moisture": [0]
+	}, {
+		"sprite": game.animations.get("cactus-mid"),
+		"heat": [3],
+		"moisture": [0]
+	}, {
+		"sprite": game.animations.get("cactus-mini-3"),
+		"heat": [3],
+		"moisture": [0]
+	}, {
+		"sprite": game.animations.get("cactus-mini-2"),
+		"heat": [3],
+		"moisture": [0]
+	}, {
+		"sprite": game.animations.get("cactus-mini"),
+		"heat": [3],
+		"moisture": [0]
 	}];
+
 	//moisture 0-2
 	//heat 0-3
 
@@ -397,8 +621,8 @@ game.scenes.add("main", new Splat.Scene(canvas, function() {
 	this.trees = createPlants(this.testTreeSprites, 0, 0, 640, 640, 35);
 
 	this.goundSprites = [
-		game.animations.get("bg-1")
-		//game.animations.get("bg-6")
+		game.animations.get("bg-1"),
+		game.animations.get("bg-6")
 	];
 
 	// sprite array, x, y, width, height
@@ -407,8 +631,7 @@ game.scenes.add("main", new Splat.Scene(canvas, function() {
 
 }, function(elapsedMilis) {
 	// simulation
-	// this.testTreeSprites[8].move(elapsedMilis);
-	// animateEntities(elapsedMilis, this.testTreeSprites);
+
 	animateEntities(elapsedMilis, this.goundSprites);
 
 }, function(context) {
@@ -423,7 +646,7 @@ game.scenes.add("main", new Splat.Scene(canvas, function() {
 	if (debug) {
 		context.strokeStyle = "white";
 		drawOutlines(context, this.trees, "white");
-		context.strokeRect(this.testTreeProperties.xRange[0], this.testTreeProperties.yRange[0], this.testTreeProperties.xRange[1], this.testTreeProperties.yRange[1]);
+
 	}
 
 }));

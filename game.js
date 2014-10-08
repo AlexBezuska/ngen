@@ -261,18 +261,30 @@ var manifest = {
 
 var game = new Splat.Game(canvas, manifest);
 var debug = false;
-var masterHeat = 0;
+var masterHeat = 1;
 
 var masterMoisture = 0;
 
 var qs = getQueryStrings();
 var qsHeat = qs.heat;
 if (qsHeat) {
-	masterHeat = parseInt(qsHeat);
+	if (parseInt(qsHeat) > 1) {
+		if (parseInt(qsHeat) > 3) {
+			masterHeat = 3;
+		} else {
+			masterHeat = parseInt(qsHeat);
+		}
+	}
 }
 var qsMoisture = qs.moisture;
 if (qsMoisture) {
-	masterMoisture = parseInt(qsMoisture);
+	if (parseInt(qsMoisture) > 0) {
+		if (parseInt(qsMoisture) > 2) {
+			masterMoisture = 2;
+		} else {
+			masterMoisture = parseInt(qsMoisture);
+		}
+	}
 }
 
 
@@ -286,8 +298,8 @@ txtMoisture.value = masterMoisture;
 
 submit.addEventListener("click", function() {
 	console.log("click");
-	var thisHeat = 0;
-	if (txtHeat.value > 0) {
+	var thisHeat = 1;
+	if (txtHeat.value > 1) {
 		if (txtHeat.value > 3) {
 			thisHeat = 3;
 		} else {
@@ -486,35 +498,35 @@ game.scenes.add("main", new Splat.Scene(canvas, function() {
 	// initialization
 	this.testTreeSprites = [{
 		"sprite": game.animations.get("bush-large-1"),
-		"heat": [2, 3],
+		"heat": [2],
 		"moisture": [1, 2]
 	}, {
 		"sprite": game.animations.get("bush-med-1"),
-		"heat": [2, 3],
+		"heat": [2],
 		"moisture": [1, 2]
 	}, {
 		"sprite": game.animations.get("bush-small-1"),
-		"heat": [2, 3],
+		"heat": [2],
 		"moisture": [1, 2]
 	}, {
 		"sprite": game.animations.get("bush-small-2"),
-		"heat": [2, 3],
+		"heat": [2],
 		"moisture": [1, 2]
 	}, {
 		"sprite": game.animations.get("tree-dead-1"),
-		"heat": [2, 3],
-		"moisture": [1, 2]
+		"heat": [2],
+		"moisture": [0]
 	}, {
 		"sprite": game.animations.get("tree-dead-2"),
-		"heat": [2, 3],
-		"moisture": [1, 2]
+		"heat": [2],
+		"moisture": [0, 1]
 	}, {
 		"sprite": game.animations.get("tree-oak-large-bare"),
-		"heat": [2, 3],
-		"moisture": [1, 2]
+		"heat": [2],
+		"moisture": [0, 1]
 	}, {
 		"sprite": game.animations.get("tree-oak-large"),
-		"heat": [2, 3],
+		"heat": [2],
 		"moisture": [1, 2]
 	}, {
 		"sprite": game.animations.get("tree-pine-med"),
@@ -539,7 +551,7 @@ game.scenes.add("main", new Splat.Scene(canvas, function() {
 	}, {
 		"sprite": game.animations.get("tree-redwood-large-bare"),
 		"heat": [1, 2],
-		"moisture": [2]
+		"moisture": [0]
 	}, {
 		"sprite": game.animations.get("flowers-2"),
 		"heat": [2],
